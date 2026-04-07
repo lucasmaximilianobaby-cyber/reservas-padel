@@ -104,7 +104,7 @@ async function mostrarHorarios() {
         document.querySelectorAll('.hora-btn').forEach(b => b.classList.remove('seleccionado'));
         btn.classList.add('seleccionado');
         horaSeleccionada = h;
-        estado.textContent = ´Seleccionaste: ${h}´;
+        estado.textContent = 'Seleccionaste: ' + h;
       };
     }
     div.appendChild(btn);
