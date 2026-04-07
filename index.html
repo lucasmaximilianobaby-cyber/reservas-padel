@@ -151,7 +151,7 @@ async function verReservas() {
     return;
   }
   reservasCache.forEach((r, i) => {
-    div.innerHTML += <p>${r[2]} ${r[3]} - ${r[0]} (Cancha ${r[1]}) <button class="btn-cancelar" onclick="borrarReserva(${i})">Borrar</button></p>;
+    div.innerHTML += '<p>' + r[2] + ' ' + r[3] + ' - ' + r[0] + ' (Cancha ' + r[1] + ') <button class="btn-cancelar" onclick="borrarReserva(' + i + ')">Borrar</button></p>';
   });
 }
 
