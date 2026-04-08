@@ -90,7 +90,7 @@ async function mostrarHorarios() {
   if (!cancha || !fecha) return;
   
   await cargarReservas();
-  console.log('Buscando:', cancha, fecha, 'Reservas:', reservasCache);
+  const ocupados = reservasCache.filter(r => String(r[1]) == String(cancha) && String(r[2]).startsWith(fecha)).map(r => String(r[3]).trim());
   const ocupados = reservasCache.filter(r => String(r[1]) == String(cancha) && String(r[2]) == String(fecha)).map(r => String(r[3]).trim());
   
   horariosDisponibles.forEach(h => {
