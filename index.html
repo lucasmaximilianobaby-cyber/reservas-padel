@@ -115,8 +115,8 @@ async function mostrarHorarios() {
 async function confirmarReserva() {
   const nombre = document.getElementById('nombre').value;
   const cancha = document.getElementById('cancha').value;
-  const fechaInput = document.getElementById('fecha').value;
-const fecha = fechaInput.split('/').reverse().join('-');
+  const fecha = document.getElementById('fecha').value;
+
   
   if(!nombre || !cancha || !fecha || !horaSeleccionada) {
     return alert('Completá todos los datos y elegí un horario');
