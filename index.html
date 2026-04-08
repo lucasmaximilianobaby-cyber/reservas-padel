@@ -139,10 +139,22 @@ async function confirmarReserva() {
     return alert('Completá todos los datos y elegí un horario');
   }
   
-  await fetch(URL_SHEET, {
-    method: 'POST',
-    body: JSON.stringify({accion: 'guardar', nombre, cancha, fecha, hora: horaSeleccionada})
-  });
+ const form = document.createElement('form');
+form.method = 'POST';
+form.action = scriptURL;
+form.target = '_blank';
+
+const datos = {accion: 'guardar', nombre, cancha, fecha, hora: horaSeleccionada};
+for (let key in datos) {
+  const input = document.createElement('input');
+  input.name = key;
+  input.value = datos[key];
+  form.appendChild(input);
+}
+
+document.body.appendChild(form);
+form.submit();
+document.body.removeChild(form);
   
   alert('Reserva confirmada');
   document.getElementById('nombre').value = '';
@@ -175,11 +187,24 @@ async function verReservas() {
 }
 
 async function borrarReserva(i) {
-  await fetch(URL_SHEET, {
-    method: 'POST',
-    body: JSON.stringify({accion: 'borrar', fila: i})
-  });
-  verReservas();
+  const form = document.createElement('form');
+  form.method = 'POST';
+  form.action = scriptURL;
+  form.target = '_blank';
+
+  const datos = {accion: 'borrar', fila: i};
+  for (let key in datos) {
+    const input = document.createElement('input');
+    input.name = key;
+    input.value = datos[key];
+    form.appendChild(input);
+  }
+
+  document.body.appendChild(form);
+  form.submit();
+  document.body.removeChild(form);
+
+  setTimeout(verReservas, 1000);
 }
 </script>
 </body>
