@@ -1,209 +1,79 @@
 <!DOCTYPE html>
-<html lang="es">
+<html>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Reservas Pádel</title>
+<meta charset="utf-8">
+<title>Reservas Padel</title>
 <style>
-body { font-family: Arial; background: url('Fondo 1.png') no-repeat center fixed; background-size: cover; margin: 0; padding: 20px; text-align: center; }
-.pantalla { display: none; }
-.activa { display: block; }
-body.fondo2 { background: url('Fondo 2.png') no-repeat center fixed; background-size: cover; }
-button { padding: 12px 24px; margin: 8px; font-size: 16px; cursor: pointer; border: none; border-radius: 5px; }
-.btn-principal { background: #4CAF50; color: white; }
-.btn-cancelar { background: #f44336; color: white; }
-.btn-atras { background: #666; color: white; }
-input, select { padding: 10px; margin: 8px; font-size: 16px; }
-.hora-btn { background: #2196F3; color: white; }
-.hora-btn.ocupado { background: #999; cursor: not-allowed; }
-.hora-btn.seleccionado { background: #FF9800; }
-#estado { font-size: 18px; margin: 15px; font-weight: bold; }
+body{font-family:Arial;background:#111;color:#fff;padding:20px;max-width:500px;margin:auto}
+input,select,button{width:100%;padding:10px;margin:5px 0;border-radius:5px;border:none}
+button{background:#0f0;color:#000;font-weight:bold;cursor:pointer}
+.hora{display:inline-block;padding:8px 12px;margin:4px;background:#333;border-radius:5px;cursor:pointer}
+.hora.ocupado{background:#f00;cursor:not-allowed}
+.hora.sel{background:#0f0;color:#000}
 </style>
 </head>
 <body>
-
-<!-- PANTALLA INICIO -->
-<div id="inicio" class="pantalla activa">
-  <h1>🎾 Reservas Pádel</h1>
-  <button class="btn-principal" onclick="mostrar('reserva')">Reservar</button>
-  <button class="btn-principal" onclick="mostrar('admin-login')">Administrador</button>
-</div>
-
-<!-- PANTALLA RESERVA -->
-<div id="reserva" class="pantalla">
-  <h2>Nueva Reserva</h2>
-  <input type="text" id="nombre" placeholder="Tu nombre"><br>
-  <select id="cancha" onchange="mostrarHorarios()">
-    <option value="">Elegí cancha</option>
-    <option value="1">Cancha 1</option>
-    <option value="2">Cancha 2</option>
-  </select><br>
-  <input type="date" id="fecha" onchange="mostrarHorarios()"><br>
-  <div id="horarios"></div>
-  <p id="estado"></p>
-  <button class="btn-principal" onclick="confirmarReserva()">Confirmar</button>
-  <button class="btn-atras" onclick="mostrar('inicio')">Volver</button>
-</div>
-
-<!-- PANTALLA ADMIN LOGIN -->
-<div id="admin-login" class="pantalla">
-  <h2>Acceso Admin</h2>
-  <input type="password" id="pass" placeholder="Contraseña"><br>
-  <button class="btn-principal" onclick="entrarAdmin()">Entrar</button>
-  <button class="btn-atras" onclick="mostrar('inicio')">Volver</button>
-</div>
-
-<!-- PANTALLA ADMIN -->
-<div id="admin" class="pantalla">
-  <h2>Reservas</h2>
-  <div id="listaReservas"></div>
-  <button class="btn-atras" onclick="mostrar('inicio')">Volver</button>
-</div>
+<h2>Reservas Padel</h2>
+<input id="nombre" placeholder="Nombre">
+<select id="cancha"><option>Cancha 1</option><option>Cancha 2</option></select>
+<input id="fecha" type="date">
+<div id="horarios"></div>
+<button onclick="confirmar()">Confirmar</button>
 
 <script>
-const scriptURL = 'https://script.google.com/macros/s/AKfycbxKp1C9eZeuqRrF04MKF_FnsPaIAUV3hVlHyEul-GwY78n8NsAvGMDpH6AcRE_IOhi-/exec';
-let horaSeleccionada = "";
-let reservasCache = [];
-const horariosDisponibles = ["13:30","15:00","16:30","18:00","19:30","21:00","22:30"];
+const scriptURL = 'https://script.google.com/macros/s/AKfycbw4dO834_8WFZlTkDYfOgpkozlhUGV8ImpvBL6lLBY23qEd25QhynXyEJJv_ztuSAx1Nw/exec';
+let horaSel = '';
 
-function mostrar(pantalla) {
-  document.querySelectorAll('.pantalla').forEach(p => p.classList.remove('activa'));
-  document.getElementById(pantalla).classList.add('activa');
-  if(pantalla === 'reservas' || pantalla === 'admin') document.body.classList.add('fondo2');
-  else document.body.classList.remove('fondo2');
+document.getElementById('fecha').addEventListener('change', cargar);
+document.getElementById('cancha').addEventListener('change', cargar);
+
+function cargar(){
+  const fecha = document.getElementById('fecha').value;
+  const cancha = document.getElementById('cancha').value;
+  if(!fecha) return;
+  const f = fecha.split('-').reverse().join('/');
+  jsonp(scriptURL + '?action=get&fecha=' + f + '&cancha=' + cancha, mostrar);
 }
 
-async function cargarReservas() {
-  return new Promise((resolve) => {
-    const callbackName = 'jsonp_callback_' + Math.round(100000 * Math.random());
-    window[callbackName] = function(data) {
-      delete window[callbackName];
-      document.body.removeChild(script);
-      reservasCache = data;
-      resolve(data);
-    };
-
-    const script = document.createElement('script');
-    script.src = scriptURL + '?callback=' + callbackName;
-    script.onerror = () => resolve([]);
-    document.body.appendChild(script);
-  });
+function mostrar(res){
+  const div = document.getElementById('horarios');
+  div.innerHTML = '';
+  for(let h=18; h<=23; h++){
+    ['00','30'].forEach(m=>{
+      if(h===23 && m==='30') return;
+      const hora = h+':'+m;
+      const span = document.createElement('span');
+      span.className = 'hora' + (res.ocupados.includes(hora)?' ocupado':'');
+      span.textContent = hora;
+      if(!res.ocupados.includes(hora)) span.onclick = ()=>seleccionar(hora, span);
+      div.appendChild(span);
+    });
+  }
 }
 
-
-async function mostrarHorarios() {
-  const cancha = document.getElementById("cancha").value;
-  const fecha = document.getElementById("fecha").value;
-  const div = document.getElementById("horarios");
-  const estado = document.getElementById("estado");
-  div.innerHTML = "";
-  estado.textContent = "";
-  horaSeleccionada = "";
-  
-  if (!cancha || !fecha) return;
-  
-  await cargarReservas();
-  const ocupados = reservasCache.filter(r => String(r[1]) == String(cancha) && String(r[2]).startsWith(fecha)).map(r => {
-  const horaStr = String(r[3]);
-  const match = horaStr.match(/T(\d{2}):(\d{2})/);
-  return match? match[1] + ':' + match[2] : horaStr.trim();
-});
-    console.log('ocupados:', ocupados);
-  horariosDisponibles.forEach(h => {
-    const btn = document.createElement("button");
-    btn.textContent = h;
-    btn.className = "hora-btn";
-    if(ocupados.includes(h)) {
-      btn.classList.add("ocupado");
-      btn.disabled = true;
-    } else {
-      btn.onclick = () => {
-        document.querySelectorAll('.hora-btn').forEach(b => b.classList.remove('seleccionado'));
-        btn.classList.add('seleccionado');
-        horaSeleccionada = h;
-        estado.textContent = 'Seleccionaste: ' + h;
-      };
-    }
-    div.appendChild(btn);
-  });
+function seleccionar(hora, el){
+  document.querySelectorAll('.hora').forEach(x=>x.classList.remove('sel'));
+  el.classList.add('sel');
+  horaSel = hora;
 }
 
-async function confirmarReserva() {
+function confirmar(){
   const nombre = document.getElementById('nombre').value;
   const cancha = document.getElementById('cancha').value;
-  const fecha = document.getElementById('fecha').value;
-
-  
-  if(!nombre || !cancha || !fecha || !horaSeleccionada) {
-    return alert('Completá todos los datos y elegí un horario');
-  }
-  
- const form = document.createElement('form');
-form.method = 'POST';
-form.action = scriptURL;
-form.target = '_blank';
-
-const datos = {accion: 'guardar', nombre, cancha, fecha, hora: horaSeleccionada};
-for (let key in datos) {
-  const input = document.createElement('input');
-  input.name = key;
-  input.value = datos[key];
-  form.appendChild(input);
-}
-
-document.body.appendChild(form);
-form.submit();
-document.body.removeChild(form);
-  
-  alert('Reserva confirmada');
-  document.getElementById('nombre').value = '';
-  document.getElementById('cancha').value = '';
-  document.getElementById('fecha').value = '';
-  document.getElementById('horarios').innerHTML = '';
-  document.getElementById('estado').textContent = '';
-  horaSeleccionada = '';
-  mostrar('inicio');
-}
-
-function entrarAdmin() {
-  if(document.getElementById('pass').value === '1234') {
-    mostrar('admin');
-    verReservas();
-  } else alert('Contraseña incorrecta');
-}
-
-async function verReservas() {
-  await cargarReservas();
-  const div = document.getElementById('listaReservas');
-  div.innerHTML = '';
-  if(reservasCache.length === 0) {
-    div.innerHTML = '<p>No hay reservas</p>';
-    return;
-  }
-  reservasCache.forEach((r, i) => {
-    div.innerHTML += '<p>' + r[2] + ' ' + r[3] + ' - ' + r[0] + ' (Cancha ' + r[1] + ') <button class="btn-cancelar" onclick="borrarReserva(' + i + ')">Borrar</button></p>';
+  const fecha = document.getElementById('fecha').value.split('-').reverse().join('/');
+  if(!nombre||!fecha||!horaSel) return alert('Completa todo');
+  jsonp(scriptURL + '?action=add&nombre='+nombre+'&cancha='+cancha+'&fecha='+fecha+'&hora='+horaSel, ()=>{
+    alert('Reserva confirmada');
+    location.reload();
   });
 }
 
-async function borrarReserva(i) {
-  const form = document.createElement('form');
-  form.method = 'POST';
-  form.action = scriptURL;
-  form.target = '_blank';
-
-  const datos = {accion: 'borrar', fila: i};
-  for (let key in datos) {
-    const input = document.createElement('input');
-    input.name = key;
-    input.value = datos[key];
-    form.appendChild(input);
-  }
-
-  document.body.appendChild(form);
-  form.submit();
-  document.body.removeChild(form);
-
-  setTimeout(verReservas, 1000);
+function jsonp(url, cb){
+  const name = 'cb'+Date.now();
+  window[name] = cb;
+  const s = document.createElement('script');
+  s.src = url + '&callback=' + name;
+  document.body.appendChild(s);
 }
 </script>
 </body>
