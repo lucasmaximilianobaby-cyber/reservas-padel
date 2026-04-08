@@ -61,7 +61,7 @@ input, select { padding: 10px; margin: 8px; font-size: 16px; }
 </div>
 
 <script>
-const scriptURL = 'https://script.google.com/macros/s/AKfycbzMNjVN_ff6BqnnvWyFTWK-W2a-E5cP0dgIaUJACLWj3fIUAGX4oXYe6hqbflTd_jFVWw/exec';
+const scriptURL = 'https://script.google.com/macros/s/AKfycbxKp1C9eZeuqRrF04MKF_FnsPaIAUV3hVlHyEul-GwY78n8NsAvGMDpH6AcRE_IOhi-/exec';
 let horaSeleccionada = "";
 let reservasCache = [];
 const horariosDisponibles = ["13:30","15:00","16:30","18:00","19:30","21:00","22:30"];
@@ -74,10 +74,8 @@ function mostrar(pantalla) {
 }
 
 async function cargarReservas() {
-  return new Promise((resolve, reject) => {
-    const script = document.createElement('script');
-    const callbackName = 'reservasCallback_' + Date.now();
-
+  return new Promise((resolve) => {
+    const callbackName = 'jsonp_callback_' + Math.round(100000 * Math.random());
     window[callbackName] = function(data) {
       delete window[callbackName];
       document.body.removeChild(script);
@@ -85,8 +83,9 @@ async function cargarReservas() {
       resolve(data);
     };
 
+    const script = document.createElement('script');
     script.src = scriptURL + '?callback=' + callbackName;
-    script.onerror = reject;
+    script.onerror = () => resolve([]);
     document.body.appendChild(script);
   });
 }
