@@ -38,17 +38,14 @@ function cargar(){
 function mostrar(res){
   const div = document.getElementById('horarios');
   div.innerHTML = '';
-  for(let h=18; h<=23; h++){
-    ['00','30'].forEach(m=>{
-      if(h===23 && m==='30') return;
-      const hora = h+':'+m;
-      const span = document.createElement('span');
-      span.className = 'hora' + (res.ocupados.includes(hora)?' ocupado':'');
-      span.textContent = hora;
-      if(!res.ocupados.includes(hora)) span.onclick = ()=>seleccionar(hora, span);
-      div.appendChild(span);
-    });
-  }
+  const horarios = ['13:30','15:00','16:30','18:00','19:30','21:00','22:30'];
+  horarios.forEach(hora=>{
+    const span = document.createElement('span');
+    span.className = 'hora' + (res.ocupados.includes(hora)?' ocupado':'');
+    span.textContent = hora;
+    if(!res.ocupados.includes(hora)) span.onclick = ()=>seleccionar(hora, span);
+    div.appendChild(span);
+  });
 }
 
 function seleccionar(hora, el){
